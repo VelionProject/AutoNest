@@ -1,4 +1,4 @@
-# AutoNest
+# AutoNest v0.1
 
 AutoNest is a semantic Python code assistant that automatically finds the best place to insert or extend code within an existing project. It supports GPT-based and local semantic analysis, backup versioning, and includes a GUI and CLI interface.
 
@@ -19,3 +19,8 @@ Run the GUI:
 ```
 python interface/autonest_gui.py
 ```
+### About the Author
+
+This is my very first Python project. I built AutoNest to learn,
+Feedback, ideas, and improvements are welcome!
+
