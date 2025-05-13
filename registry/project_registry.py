@@ -3,17 +3,22 @@ from tkinter import filedialog, messagebox
 import os
 from code_inserter import safe_insert_code
 from autonest_semantics import suggest
-from backup_manager import list_backup_sessions, restore_file_from_session
+from backup_gui import open_restore_window
+from project_registry import register_project, get_last_project, load_registry
 
 class AutoNestGUI:
     def __init__(self, root):
         self.root = root
         self.root.title("AutoNest 0.2 – Intelligenter Code-Inserter")
-        self.root.geometry("820x700")
+        self.root.geometry("880x740")
 
         self.project_path = tk.StringVar()
         self.use_gpt = tk.BooleanVar()
         self.suggestion = None
+
+        last_project = get_last_project()
+        if last_project:
+            self.project_path.set(last_project)
 
         self.build_gui()
 
@@ -28,12 +33,11 @@ class AutoNestGUI:
         gpt_toggle = tk.Checkbutton(self.root, text="GPT-Modus aktivieren", variable=self.use_gpt)
         gpt_toggle.pack(anchor="w", padx=15, pady=(0, 5))
 
-        tk.Button(self.root, text="Backup wiederherstellen", command=self.open_restore_window).pack(anchor="w", padx=15, pady=(0, 10))
-        tk.Button(self.root, text="Projekt beschreiben", command=self.analyse_project_description).pack(anchor="w",
-                                                                                                        padx=15,
-                                                                                                        pady=(0, 5))
+        tk.Button(self.root, text="Backup wiederherstellen", command=lambda: open_restore_window(self.root)).pack(anchor="w", padx=15, pady=(0, 10))
+        tk.Button(self.root, text="Projekt beschreiben", command=self.analyse_project_description).pack(anchor="w", padx=15, pady=(0, 5))
 
-        padx=15,
+        self.build_recent_projects_section()
+
         frame_code = tk.LabelFrame(self.root, text="Neuen Python-Code einfügen", padx=10, pady=5)
         frame_code.pack(fill="both", expand=True, padx=10, pady=5)
 
@@ -49,34 +53,40 @@ class AutoNestGUI:
         self.result_label = tk.Label(self.root, text="Noch keine Analyse durchgeführt.", fg="gray", font=("Arial", 10, "italic"))
         self.result_label.pack(pady=(10, 0))
 
+    def build_recent_projects_section(self):
+        frame = tk.LabelFrame(self.root, text="Letzte Projekte", padx=10, pady=5)
+        frame.pack(fill="both", padx=10, pady=5, expand=False)
 
-    def analyse_project_description(self):
-        path = self.project_path.get().strip()
-        if not path:
-            messagebox.showwarning("Pfad fehlt", "Bitte zuerst ein Projektverzeichnis wählen.")
-            return
+        scrollbar = tk.Scrollbar(frame)
+        scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
 
-        if self.use_gpt.get():
-            # GPT-Modus verwenden
-            try:
-                from autonest_gpt import describe_project_with_gpt
-                description = describe_project_with_gpt(path)
-            except Exception as e:
-                messagebox.showerror("Fehler bei GPT", f"Analyse nicht möglich:\n{str(e)}")
-                return
-        else:
-            # Lokale Analyse
-            from project_scanner import describe_project_locally
-            description = describe_project_locally(path)
+        self.project_listbox = tk.Listbox(frame, height=5, yscrollcommand=scrollbar.set, selectmode=tk.SINGLE)
+        self.project_listbox.pack(fill="both", expand=True)
+        scrollbar.config(command=self.project_listbox.yview)
 
-        # Ausgabe im Pop-up
-        messagebox.showinfo("Projektbeschreibung", description)
+        # Lade Projekte
+        history = load_registry().get("history", [])
+        for path in history:
+            name = os.path.basename(path.rstrip("/\\"))
+            display = f"{name}  [{path}]"
+            self.project_listbox.insert(tk.END, display)
 
-        pady=(0, 5)
+        # Tooltip bei Hover (könnte später ergänzt werden)
+        def on_double_click(event):
+            selection = self.project_listbox.curselection()
+            if selection:
+                text = self.project_listbox.get(selection[0])
+                path = text.split("[")[-1].rstrip("]")
+                self.project_path.set(path)
+                register_project(path)
+
+        self.project_listbox.bind("<Double-Button-1>", on_double_click)
+
     def browse_folder(self):
         folder = filedialog.askdirectory()
         if folder:
             self.project_path.set(folder)
+            register_project(folder)
 
     def analyse_code(self):
         code = self.code_text.get("1.0", tk.END).strip()
@@ -139,49 +149,24 @@ class AutoNestGUI:
                 f"Code erfolgreich eingefügt!\n\nDatei: {result['datei']}\nModus: {modus}\nBackup: {result['backup_session']}"
             )
 
-    def open_restore_window(self):
-        restore_win = tk.Toplevel(self.root)
-        restore_win.title("Backup wiederherstellen")
-        restore_win.geometry("500x300")
-
-        tk.Label(restore_win, text="Backup-Session wählen:").pack(pady=5)
-        session_var = tk.StringVar()
-        sessions = list_backup_sessions()
-        if not sessions:
-            tk.Label(restore_win, text="Keine Sessions gefunden.", fg="red").pack()
+    def analyse_project_description(self):
+        path = self.project_path.get().strip()
+        if not path:
+            messagebox.showwarning("Pfad fehlt", "Bitte zuerst ein Projektverzeichnis wählen.")
             return
-        session_dropdown = tk.OptionMenu(restore_win, session_var, *sessions)
-        session_dropdown.pack(pady=5)
 
-        tk.Label(restore_win, text="Datei innerhalb der Session:").pack(pady=5)
-        file_var = tk.StringVar()
-        file_dropdown = tk.OptionMenu(restore_win, file_var, "")
-        file_dropdown.pack(pady=5)
-
-        def update_files(*args):
-            session = session_var.get()
-            path = os.path.join(".autonest_backups", session)
+        if self.use_gpt.get():
             try:
-                files = os.listdir(path)
-            except FileNotFoundError:
-                files = []
-            menu = file_dropdown["menu"]
-            menu.delete(0, "end")
-            for f in files:
-                menu.add_command(label=f, command=tk._setit(file_var, f))
-
-        session_var.trace("w", update_files)
-
-        def restore_action():
-            session = session_var.get()
-            file = file_var.get()
-            if not session or not file:
-                messagebox.showwarning("Fehlende Auswahl", "Bitte Session und Datei wählen.")
+                from autonest_gpt import describe_project_with_gpt
+                description = describe_project_with_gpt(path)
+            except Exception as e:
+                messagebox.showerror("Fehler bei GPT", f"Analyse nicht möglich:\n{str(e)}")
                 return
-            result = restore_file_from_session(session, file)
-            messagebox.showinfo("Wiederhergestellt", result)
+        else:
+            from project_scanner import describe_project_locally
+            description = describe_project_locally(path)
 
-        tk.Button(restore_win, text="Wiederherstellen", command=restore_action).pack(pady=15)
+        messagebox.showinfo("Projektbeschreibung", description)
 
 if __name__ == "__main__":
     root = tk.Tk()

@@ -54,6 +54,31 @@ def scan_project_structure(project_path):
         project_map.append(structure)
     return project_map
 
+
+def describe_project_locally(project_path):
+    import os
+    function_count = 0
+    class_count = 0
+    modules = set()
+
+    for root, _, files in os.walk(project_path):
+        for file in files:
+            if file.endswith(".py"):
+                with open(os.path.join(root, file), encoding="utf-8") as f:
+                    lines = f.readlines()
+                for line in lines:
+                    if line.strip().startswith("def "):
+                        function_count += 1
+                    elif line.strip().startswith("class "):
+                        class_count += 1
+                    elif "import " in line or "from " in line:
+                        parts = line.replace(",", " ").split()
+                        modules.update(p for p in parts if p not in {"import", "from", "as"})
+
+    return f"Funktionen: {function_count}\nKlassen: {class_count}\nVerwendete Module: {', '.join(sorted(modules))}"
+
+
+
 # Beispielnutzung (zum Testen):
 if __name__ == "__main__":
     from pprint import pprint
