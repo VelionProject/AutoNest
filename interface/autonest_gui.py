@@ -1,9 +1,13 @@
+import os
+import sys
 import tkinter as tk
 from tkinter import filedialog, messagebox
-import os
-from code_inserter import safe_insert_code
-from autonest_semantics import suggest
-from backup_manager import list_backup_sessions, restore_file_from_session
+
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+
+from core.code_inserter import safe_insert_code
+from core.autonest_semantics import suggest
+from backup.backup_manager import list_backup_sessions, restore_file_from_session
 
 class AutoNestGUI:
     def __init__(self, root):
@@ -28,12 +32,17 @@ class AutoNestGUI:
         gpt_toggle = tk.Checkbutton(self.root, text="GPT-Modus aktivieren", variable=self.use_gpt)
         gpt_toggle.pack(anchor="w", padx=15, pady=(0, 5))
 
-        tk.Button(self.root, text="Backup wiederherstellen", command=self.open_restore_window).pack(anchor="w", padx=15, pady=(0, 10))
-        tk.Button(self.root, text="Projekt beschreiben", command=self.analyse_project_description).pack(anchor="w",
-                                                                                                        padx=15,
-                                                                                                        pady=(0, 5))
+        tk.Button(
+            self.root,
+            text="Backup wiederherstellen",
+            command=self.open_restore_window,
+        ).pack(anchor="w", padx=15, pady=(0, 10))
+        tk.Button(
+            self.root,
+            text="Projekt beschreiben",
+            command=self.analyse_project_description,
+        ).pack(anchor="w", padx=15, pady=(0, 5))
 
-        padx=15,
         frame_code = tk.LabelFrame(self.root, text="Neuen Python-Code einfügen", padx=10, pady=5)
         frame_code.pack(fill="both", expand=True, padx=10, pady=5)
 
@@ -72,7 +81,6 @@ class AutoNestGUI:
         # Ausgabe im Pop-up
         messagebox.showinfo("Projektbeschreibung", description)
 
-        pady=(0, 5)
     def browse_folder(self):
         folder = filedialog.askdirectory()
         if folder:
@@ -183,7 +191,11 @@ class AutoNestGUI:
 
         tk.Button(restore_win, text="Wiederherstellen", command=restore_action).pack(pady=15)
 
-if __name__ == "__main__":
+def main():
     root = tk.Tk()
     app = AutoNestGUI(root)
     root.mainloop()
+
+
+if __name__ == "__main__":
+    main()

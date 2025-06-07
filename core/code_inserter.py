@@ -3,8 +3,8 @@
 import ast
 import os
 import tempfile
-from insertion_finder import find_best_insertion_point
-from backup_manager import create_backup_session, backup_file_to_session
+from core.insertion_finder import find_best_insertion_point
+from backup.backup_manager import create_backup_session, backup_file_to_session
 
 def insert_code_into_file(code_str, project_path, modus="neu"):
     """

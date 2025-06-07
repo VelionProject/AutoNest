@@ -1,9 +1,13 @@
 # autonest_cli.py
 
-from code_inserter import insert_code_into_file
-from insertion_finder import find_best_insertion_point
-from pprint import pprint
 import os
+import sys
+
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+
+from core.code_inserter import insert_code_into_file
+from core.insertion_finder import find_best_insertion_point
+from pprint import pprint
 
 def decide_mode_and_confirm(code_str, project_path):
     matches = find_best_insertion_point(code_str, project_path)

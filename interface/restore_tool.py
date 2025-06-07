@@ -1,7 +1,11 @@
 # restore_tool.py
 
 import os
-from backup_manager import list_backup_sessions, restore_file_from_session
+import sys
+
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+
+from backup.backup_manager import list_backup_sessions, restore_file_from_session
 
 def show_sessions():
     sessions = list_backup_sessions()

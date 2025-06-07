@@ -2,7 +2,7 @@
 
 import ast
 from difflib import SequenceMatcher
-from project_scanner import scan_project_structure
+from core.project_scanner import scan_project_structure
 
 def extract_function_names(code_str):
     """

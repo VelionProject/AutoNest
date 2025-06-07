@@ -1,6 +1,6 @@
 import os
 from openai import ChatCompletion
-from autonest_gpt import build_prompt, describe_project_with_gpt
+from core.autonest_gpt import build_prompt, describe_project_with_gpt
 
 openai_api_key = os.getenv("OPENAI_API_KEY")
 

@@ -4,10 +4,7 @@ setup(
     name='autonest',
     version='0.2',
     packages=find_packages(),
-    install_requires=[
-        'openai',
-        'tk'
-    ],
+    install_requires=['openai'],
     entry_points={
         'console_scripts': [
             'autonest-gui=interface.autonest_gui:main'
