@@ -4,10 +4,11 @@
 USE_GPT = False  # ← Ändere das später auf True, wenn du GPT willst
 
 if USE_GPT:
-    from autonest_gpt import suggest_with_gpt as suggest_logic
-    from project_scanner import scan_project_structure
+    from core.autonest_gpt import suggest_with_gpt as suggest_logic
+    from core.project_scanner import scan_project_structure
 else:
-    from autonest_suggestor import suggest_insertion as suggest_logic
+    from core.autonest_suggestor import suggest_insertion as suggest_logic
+
 
 def suggest(code_str, project_path):
     if USE_GPT:

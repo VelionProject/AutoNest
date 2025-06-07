@@ -36,13 +36,12 @@ def describe_project_with_gpt(project_path):
                     summary_input += f"# Datei: {file}\n" + content[:1500] + "\n\n"
 
     messages = [
-        {"role": "system", "content": "Du bist ein Code-Analyst. Beschreibe kurz, was dieses Projekt tut."},
-        {"role": "user", "content": summary_input}
+        {
+            "role": "system",
+            "content": "Du bist ein Code-Analyst. Beschreibe kurz, was dieses Projekt tut.",
+        },
+        {"role": "user", "content": summary_input},
     ]
 
-    response = ChatCompletion.create(
-        model="gpt-4",
-        messages=messages,
-        api_key=openai_api_key
-    )
+    response = ChatCompletion.create(model="gpt-4", messages=messages, api_key=openai_api_key)
     return response["choices"][0]["message"]["content"]

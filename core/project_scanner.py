@@ -3,6 +3,7 @@
 import os
 import ast
 
+
 def scan_python_files(project_path):
     """
     Durchsucht alle Unterordner eines Projekts nach .py-Dateien.
@@ -11,9 +12,10 @@ def scan_python_files(project_path):
     python_files = []
     for root, _, files in os.walk(project_path):
         for file in files:
-            if file.endswith('.py'):
+            if file.endswith(".py"):
                 python_files.append(os.path.join(root, file))
     return python_files
+
 
 def extract_structure(file_path):
     """
@@ -21,13 +23,9 @@ def extract_structure(file_path):
     und extrahiert alle Klassen- und Funktionsnamen.
     Gibt ein Dictionary mit Struktur zurück.
     """
-    structure = {
-        "file": file_path,
-        "classes": [],
-        "functions": []
-    }
+    structure = {"file": file_path, "classes": [], "functions": []}
 
-    with open(file_path, 'r', encoding='utf-8') as f:
+    with open(file_path, "r", encoding="utf-8") as f:
         try:
             node = ast.parse(f.read(), filename=file_path)
         except SyntaxError:
@@ -41,6 +39,7 @@ def extract_structure(file_path):
             structure["functions"].append(element.name)
 
     return structure
+
 
 def scan_project_structure(project_path):
     """
@@ -57,6 +56,7 @@ def scan_project_structure(project_path):
 
 def describe_project_locally(project_path):
     import os
+
     function_count = 0
     class_count = 0
     modules = set()
@@ -78,9 +78,9 @@ def describe_project_locally(project_path):
     return f"Funktionen: {function_count}\nKlassen: {class_count}\nVerwendete Module: {', '.join(sorted(modules))}"
 
 
-
 # Beispielnutzung (zum Testen):
 if __name__ == "__main__":
     from pprint import pprint
+
     pfad = input("Pfad zum Projektordner eingeben: ").strip()
     pprint(scan_project_structure(pfad))

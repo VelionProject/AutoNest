@@ -1,14 +1,19 @@
 import tkinter as tk
 from tkinter import filedialog, messagebox
 import os
-from code_inserter import safe_insert_code
-from autonest_semantics import suggest
-from backup_manager import list_backup_sessions, restore_file_from_session
+from core.code_inserter import safe_insert_code
+from core.autonest_semantics import suggest
+from backup.backup_manager import list_backup_sessions, restore_file_from_session
+from utils.logger import get_logger
+from utils.i18n import t
+
+logger = get_logger(__name__)
+
 
 class AutoNestGUI:
     def __init__(self, root):
         self.root = root
-        self.root.title("AutoNest 0.2 – Intelligenter Code-Inserter")
+        self.root.title("AutoNest 0.2")
         self.root.geometry("820x700")
 
         self.project_path = tk.StringVar()
@@ -18,28 +23,30 @@ class AutoNestGUI:
         self.build_gui()
 
     def build_gui(self):
-        frame_top = tk.LabelFrame(self.root, text="Projektverzeichnis", padx=10, pady=5)
+        frame_top = tk.LabelFrame(self.root, text=t("Projektverzeichnis"), padx=10, pady=5)
         frame_top.pack(fill="x", padx=10, pady=5)
 
         path_entry = tk.Entry(frame_top, textvariable=self.project_path, width=70)
         path_entry.pack(side=tk.LEFT, padx=(0, 5))
-        tk.Button(frame_top, text="Durchsuchen", command=self.browse_folder).pack(side=tk.LEFT)
+        tk.Button(frame_top, text=t("Durchsuchen"), command=self.browse_folder).pack(side=tk.LEFT)
 
-        gpt_toggle = tk.Checkbutton(self.root, text="GPT-Modus aktivieren", variable=self.use_gpt)
+        gpt_toggle = tk.Checkbutton(
+            self.root, text=t("GPT-Modus aktivieren"), variable=self.use_gpt
+        )
         gpt_toggle.pack(anchor="w", padx=15, pady=(0, 5))
 
         tk.Button(
             self.root,
-            text="Backup wiederherstellen",
+            text=t("Backup wiederherstellen"),
             command=self.open_restore_window,
         ).pack(anchor="w", padx=15, pady=(0, 10))
         tk.Button(
             self.root,
-            text="Projekt beschreiben",
+            text=t("Projekt beschreiben"),
             command=self.analyse_project_description,
         ).pack(anchor="w", padx=15, pady=(0, 5))
 
-        frame_code = tk.LabelFrame(self.root, text="Neuen Python-Code einfügen", padx=10, pady=5)
+        frame_code = tk.LabelFrame(self.root, text=t("Neuen Python-Code einfügen"), padx=10, pady=5)
         frame_code.pack(fill="both", expand=True, padx=10, pady=5)
 
         self.code_text = tk.Text(frame_code, height=15)
@@ -48,36 +55,47 @@ class AutoNestGUI:
         button_frame = tk.Frame(self.root)
         button_frame.pack(pady=10)
 
-        tk.Button(button_frame, text="Analyse starten", command=self.analyse_code).pack(side=tk.LEFT, padx=10)
-        tk.Button(button_frame, text="Code einfügen + sichern", command=self.insert_code).pack(side=tk.LEFT)
+        tk.Button(button_frame, text=t("Analyse starten"), command=self.analyse_code).pack(
+            side=tk.LEFT, padx=10
+        )
+        tk.Button(button_frame, text=t("Code einfügen + sichern"), command=self.insert_code).pack(
+            side=tk.LEFT
+        )
 
-        self.result_label = tk.Label(self.root, text="Noch keine Analyse durchgeführt.", fg="gray", font=("Arial", 10, "italic"))
+        self.result_label = tk.Label(
+            self.root,
+            text=t("Noch keine Analyse durchgeführt."),
+            fg="gray",
+            font=("Arial", 10, "italic"),
+        )
         self.result_label.pack(pady=(10, 0))
-
 
     def analyse_project_description(self):
         path = self.project_path.get().strip()
         if not path:
-            messagebox.showwarning("Pfad fehlt", "Bitte zuerst ein Projektverzeichnis wählen.")
+            messagebox.showwarning(
+                t("Pfad fehlt"), t("Bitte zuerst ein Projektverzeichnis wählen.")
+            )
             return
 
         if self.use_gpt.get():
             # GPT-Modus verwenden
             try:
-                from autonest_gpt import describe_project_with_gpt
+                from core.autonest_gpt import describe_project_with_gpt
+
                 description = describe_project_with_gpt(path)
             except Exception as e:
-                messagebox.showerror("Fehler bei GPT", f"Analyse nicht möglich:\n{str(e)}")
+                messagebox.showerror(t("Fehler bei GPT"), f"Analyse nicht möglich:\n{str(e)}")
                 return
         else:
             # Lokale Analyse
-            from project_scanner import describe_project_locally
+            from core.project_scanner import describe_project_locally
+
             description = describe_project_locally(path)
 
         # Ausgabe im Pop-up
-        messagebox.showinfo("Projektbeschreibung", description)
+        messagebox.showinfo(t("Projektbeschreibung"), description)
 
-        pady=(0, 5)
     def browse_folder(self):
         folder = filedialog.askdirectory()
         if folder:
@@ -88,7 +106,7 @@ class AutoNestGUI:
         path = self.project_path.get().strip()
 
         if not code or not path:
-            messagebox.showerror("Fehlende Eingaben", "Bitte Code und Projektpfad angeben.")
+            messagebox.showerror(t("Fehlende Eingaben"), t("Bitte Code und Projektpfad angeben."))
             return
 
         os.environ["AUTONEST_USE_GPT"] = "1" if self.use_gpt.get() else "0"
@@ -115,15 +133,15 @@ class AutoNestGUI:
             color = "red"
             symbol = "❌"
 
-        status_text = (
-            f"{symbol}  Modus: {modus.upper()}  |  Datei: {datei}  |  Funktion: {funktion}  |  Sicherheit: {sicherheit.upper()}"
-        )
+        status_text = f"{symbol}  Modus: {modus.upper()}  |  Datei: {datei}  |  Funktion: {funktion}  |  Sicherheit: {sicherheit.upper()}"
 
         self.result_label.config(text=status_text, fg=color, font=("Arial", 10, "bold"))
 
     def insert_code(self):
         if not self.suggestion:
-            messagebox.showwarning("Analyse erforderlich", "Bitte zuerst auf 'Analyse starten' klicken.")
+            messagebox.showwarning(
+                t("Analyse erforderlich"), t("Bitte zuerst auf 'Analyse starten' klicken.")
+            )
             return
 
         code = self.code_text.get("1.0", tk.END).strip()
@@ -133,15 +151,15 @@ class AutoNestGUI:
         try:
             result = safe_insert_code(code, path, modus=modus)
         except Exception as e:
-            messagebox.showerror("Fehlgeschlagen", f"Einfügefehler: {str(e)}")
+            messagebox.showerror(t("Fehlgeschlagen"), f"Einfügefehler: {str(e)}")
             return
 
         if "error" in result:
-            messagebox.showerror("Fehler", result["error"])
+            messagebox.showerror(t("Fehler"), result["error"])
         else:
             messagebox.showinfo(
-                "Erfolg",
-                f"Code erfolgreich eingefügt!\n\nDatei: {result['datei']}\nModus: {modus}\nBackup: {result['backup_session']}"
+                t("Erfolg"),
+                f"Code erfolgreich eingefügt!\n\nDatei: {result['datei']}\nModus: {modus}\nBackup: {result['backup_session']}",
             )
 
     def open_restore_window(self):
@@ -149,16 +167,16 @@ class AutoNestGUI:
         restore_win.title("Backup wiederherstellen")
         restore_win.geometry("500x300")
 
-        tk.Label(restore_win, text="Backup-Session wählen:").pack(pady=5)
+        tk.Label(restore_win, text=t("Backup-Session wählen:")).pack(pady=5)
         session_var = tk.StringVar()
         sessions = list_backup_sessions()
         if not sessions:
-            tk.Label(restore_win, text="Keine Sessions gefunden.", fg="red").pack()
+            tk.Label(restore_win, text=t("Keine Sessions gefunden."), fg="red").pack()
             return
         session_dropdown = tk.OptionMenu(restore_win, session_var, *sessions)
         session_dropdown.pack(pady=5)
 
-        tk.Label(restore_win, text="Datei innerhalb der Session:").pack(pady=5)
+        tk.Label(restore_win, text=t("Datei innerhalb der Session:")).pack(pady=5)
         file_var = tk.StringVar()
         file_dropdown = tk.OptionMenu(restore_win, file_var, "")
         file_dropdown.pack(pady=5)
@@ -181,12 +199,13 @@ class AutoNestGUI:
             session = session_var.get()
             file = file_var.get()
             if not session or not file:
-                messagebox.showwarning("Fehlende Auswahl", "Bitte Session und Datei wählen.")
+                messagebox.showwarning(t("Fehlende Auswahl"), t("Bitte Session und Datei wählen."))
                 return
             result = restore_file_from_session(session, file)
-            messagebox.showinfo("Wiederhergestellt", result)
+            messagebox.showinfo(t("Wiederhergestellt"), result)
 
-        tk.Button(restore_win, text="Wiederherstellen", command=restore_action).pack(pady=15)
+        tk.Button(restore_win, text=t("Wiederherstellen"), command=restore_action).pack(pady=15)
+
 
 def main():
     root = tk.Tk()
