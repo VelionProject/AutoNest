@@ -1,7 +1,16 @@
 # autonest_semantics.py
 
-# Schalter: True = GPT verwenden, False = lokalen Suggestor
-USE_GPT = False  # ← Ändere das später auf True, wenn du GPT willst
+"""Logic for choosing between GPT and local suggestion."""
+
+import os
+from utils.config import load_config
+
+cfg = load_config()
+env_value = os.getenv("AUTONEST_USE_GPT")
+if env_value is not None:
+    USE_GPT = env_value.lower() in ("1", "true", "yes")
+else:
+    USE_GPT = cfg.get("use_gpt", False)
 
 if USE_GPT:
     from core.autonest_gpt import suggest_with_gpt as suggest_logic
