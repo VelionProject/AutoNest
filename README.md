@@ -37,6 +37,8 @@ Feedback, ideas, and improvements are welcome!
 
 ## Configuration
 Edit `config.json` to configure backup location, GPT usage and a default project path.
+You can also set the environment variable `AUTONEST_USE_GPT` ("1" or "0") to
+override the `use_gpt` option temporarily.
 
 ## Running Tests
 Install dev dependencies and run:
