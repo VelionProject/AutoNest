@@ -5,7 +5,10 @@ import os
 pytest.importorskip("tkinter")
 pytest.importorskip("openai")
 
-sys.path.insert(0, os.getcwd())
+# Add project root to PYTHONPATH so tests work when executed from the
+# tests directory or via CI tools where the working directory may not be
+# the repository root.
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 from interface.autonest_gui import AutoNestGUI
 import tkinter as tk
 
