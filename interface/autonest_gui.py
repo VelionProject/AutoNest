@@ -28,12 +28,17 @@ class AutoNestGUI:
         gpt_toggle = tk.Checkbutton(self.root, text="GPT-Modus aktivieren", variable=self.use_gpt)
         gpt_toggle.pack(anchor="w", padx=15, pady=(0, 5))
 
-        tk.Button(self.root, text="Backup wiederherstellen", command=self.open_restore_window).pack(anchor="w", padx=15, pady=(0, 10))
-        tk.Button(self.root, text="Projekt beschreiben", command=self.analyse_project_description).pack(anchor="w",
-                                                                                                        padx=15,
-                                                                                                        pady=(0, 5))
+        tk.Button(
+            self.root,
+            text="Backup wiederherstellen",
+            command=self.open_restore_window,
+        ).pack(anchor="w", padx=15, pady=(0, 10))
+        tk.Button(
+            self.root,
+            text="Projekt beschreiben",
+            command=self.analyse_project_description,
+        ).pack(anchor="w", padx=15, pady=(0, 5))
 
-        padx=15,
         frame_code = tk.LabelFrame(self.root, text="Neuen Python-Code einfügen", padx=10, pady=5)
         frame_code.pack(fill="both", expand=True, padx=10, pady=5)
 
@@ -183,7 +188,11 @@ class AutoNestGUI:
 
         tk.Button(restore_win, text="Wiederherstellen", command=restore_action).pack(pady=15)
 
-if __name__ == "__main__":
+def main():
     root = tk.Tk()
     app = AutoNestGUI(root)
     root.mainloop()
+
+
+if __name__ == "__main__":
+    main()
