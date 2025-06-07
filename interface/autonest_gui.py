@@ -191,7 +191,7 @@ class AutoNestGUI:
             menu = file_dropdown["menu"]
             menu.delete(0, "end")
             for f in files:
-                menu.add_command(label=f, command=tk._setit(file_var, f))
+                menu.add_command(label=f, command=lambda value=f: file_var.set(value))
 
         session_var.trace("w", update_files)
 
