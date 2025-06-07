@@ -1,5 +1,8 @@
 {
   "backup_dir": ".autonest_backups",
   "use_gpt": false,
-  "default_project_path": ""
+  "default_project_path": "",
+  "modules": {
+    "sample_plugin": true
+  }
 }

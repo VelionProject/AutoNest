@@ -31,6 +31,9 @@ _TRANSLATIONS = {
         "Bitte Code und Projektpfad angeben.": "Please provide code and project path.",
         "Bitte Session und Datei wählen.": "Please choose session and file.",
         "Wiederhergestellt": "Restored",
+        "Module verwalten": "Manage modules",
+        "Speichern": "Save",
+        "Modulstatus gespeichert.": "Module status saved.",
     },
     "de": {},
 }

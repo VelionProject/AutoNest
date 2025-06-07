@@ -6,6 +6,8 @@ from core.autonest_semantics import suggest
 from backup.backup_manager import list_backup_sessions, restore_file_from_session
 from utils.logger import get_logger
 from utils.i18n import t
+from utils.config import load_config, save_config
+from plugins import list_plugins
 
 logger = get_logger(__name__)
 
@@ -16,8 +18,10 @@ class AutoNestGUI:
         self.root.title("AutoNest 0.2")
         self.root.geometry("820x700")
 
-        self.project_path = tk.StringVar()
-        self.use_gpt = tk.BooleanVar()
+        self.config = load_config()
+
+        self.project_path = tk.StringVar(value=self.config.get("default_project_path", ""))
+        self.use_gpt = tk.BooleanVar(value=self.config.get("use_gpt", False))
         self.suggestion = None
 
         self.build_gui()
@@ -40,6 +44,11 @@ class AutoNestGUI:
             text=t("Backup wiederherstellen"),
             command=self.open_restore_window,
         ).pack(anchor="w", padx=15, pady=(0, 10))
+        tk.Button(
+            self.root,
+            text=t("Module verwalten"),
+            command=self.open_module_manager,
+        ).pack(anchor="w", padx=15, pady=(0, 5))
         tk.Button(
             self.root,
             text=t("Projekt beschreiben"),
@@ -205,6 +214,28 @@ class AutoNestGUI:
             messagebox.showinfo(t("Wiederhergestellt"), result)
 
         tk.Button(restore_win, text=t("Wiederherstellen"), command=restore_action).pack(pady=15)
+
+    def open_module_manager(self):
+        win = tk.Toplevel(self.root)
+        win.title(t("Module verwalten"))
+        win.geometry("300x300")
+
+        vars_ = {}
+        modules = self.config.get("modules", {})
+        for name in list_plugins():
+            var = tk.BooleanVar(value=modules.get(name, True))
+            vars_[name] = var
+            tk.Checkbutton(win, text=name, variable=var).pack(anchor="w")
+
+        def save():
+            for name, var in vars_.items():
+                modules[name] = var.get()
+            self.config["modules"] = modules
+            save_config(self.config)
+            messagebox.showinfo(t("Erfolg"), t("Modulstatus gespeichert."))
+            win.destroy()
+
+        tk.Button(win, text=t("Speichern"), command=save).pack(pady=10)
 
 
 def main():

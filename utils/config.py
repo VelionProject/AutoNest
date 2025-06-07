@@ -1,7 +1,12 @@
 import json
 import os
 
-DEFAULT_CONFIG = {"backup_dir": ".autonest_backups", "use_gpt": False, "default_project_path": ""}
+DEFAULT_CONFIG = {
+    "backup_dir": ".autonest_backups",
+    "use_gpt": False,
+    "default_project_path": "",
+    "modules": {},
+}
 
 
 def load_config(path="config.json"):
