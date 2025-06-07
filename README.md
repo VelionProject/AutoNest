@@ -20,6 +20,16 @@ Run the GUI:
 ```
 python interface/autonest_gui.py
 ```
+Run the CLI:
+```
+python interface/autonest_cli.py
+```
+Use the restore tool to recover backups:
+```
+python interface/restore_tool.py
+```
+After installing with `setup.py`, you can also launch the GUI using the
+`autonest-gui` command provided by the console script entry point.
 ### About the Author
 
 This is my very first Python project. I built AutoNest to learn,
