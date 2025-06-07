@@ -18,7 +18,7 @@ def save_context_entry(project_path, suggestion, code, user_override=False):
         "mode": suggestion.get("vermuteter_modus"),
         "decision_safety": suggestion.get("sicherheit"),
         "raw_code": code.strip(),
-        "user_override": user_override
+        "user_override": user_override,
     }
     with open(memory_path, "a", encoding="utf-8") as f:
         f.write(json.dumps(entry) + "\n")

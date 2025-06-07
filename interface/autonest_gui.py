@@ -96,8 +96,6 @@ class AutoNestGUI:
         # Ausgabe im Pop-up
         messagebox.showinfo(t("Projektbeschreibung"), description)
 
-        pady = (0, 5)
-
     def browse_folder(self):
         folder = filedialog.askdirectory()
         if folder:
