@@ -3,8 +3,10 @@
 import ast
 import os
 import tempfile
-from insertion_finder import find_best_insertion_point
-from backup_manager import create_backup_session, backup_file_to_session
+
+from core.insertion_finder import find_best_insertion_point
+from backup.backup_manager import create_backup_session, backup_file_to_session
+
 
 def insert_code_into_file(code_str, project_path, modus="neu"):
     """
@@ -18,7 +20,7 @@ def insert_code_into_file(code_str, project_path, modus="neu"):
     target_file = best["file"]
     insert_target = best["match_in_project"]
 
-    with open(target_file, 'r', encoding='utf-8') as f:
+    with open(target_file, "r", encoding="utf-8") as f:
         lines = f.readlines()
 
     new_code_lines = code_str.strip().splitlines(keepends=True)
@@ -83,16 +85,12 @@ def insert_code_into_file(code_str, project_path, modus="neu"):
         os.unlink(temp.name)
         return {"error": f"Fehler beim Kompilieren: {e}"}
 
-    with open(target_file, 'w', encoding='utf-8') as f:
+    with open(target_file, "w", encoding="utf-8") as f:
         f.writelines(updated)
 
     os.unlink(temp.name)
-    return {
-        "status": "Code eingefügt",
-        "datei": target_file,
-        "modus": modus,
-        "ziel": insert_target
-    }
+    return {"status": "Code eingefügt", "datei": target_file, "modus": modus, "ziel": insert_target}
+
 
 def safe_insert_code(code_str, project_path, modus="neu"):
     """
@@ -113,6 +111,7 @@ def safe_insert_code(code_str, project_path, modus="neu"):
     result["backup_session"] = session_dir
     return result
 
+
 # Beispiel zum Testen
 if __name__ == "__main__":
     test_code = """
@@ -122,4 +121,5 @@ def calculate_checksum(data):
     pfad = input("Projektpfad: ").strip()
     res = safe_insert_code(test_code, pfad, modus="neu")
     from pprint import pprint
+
     pprint(res)

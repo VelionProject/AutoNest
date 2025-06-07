@@ -1,7 +1,7 @@
 # autonest_cli.py
 
-from code_inserter import insert_code_into_file
-from insertion_finder import find_best_insertion_point
+from core.code_inserter import insert_code_into_file
+from core.insertion_finder import find_best_insertion_point
 from pprint import pprint
 import os
 from utils.logger import get_logger

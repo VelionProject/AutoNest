@@ -1,9 +1,9 @@
 import tkinter as tk
 from tkinter import filedialog, messagebox
 import os
-from code_inserter import safe_insert_code
-from autonest_semantics import suggest
-from backup_manager import list_backup_sessions, restore_file_from_session
+from core.code_inserter import safe_insert_code
+from core.autonest_semantics import suggest
+from backup.backup_manager import list_backup_sessions, restore_file_from_session
 from utils.logger import get_logger
 from utils.i18n import t
 
@@ -81,7 +81,7 @@ class AutoNestGUI:
         if self.use_gpt.get():
             # GPT-Modus verwenden
             try:
-                from autonest_gpt import describe_project_with_gpt
+                from core.autonest_gpt import describe_project_with_gpt
 
                 description = describe_project_with_gpt(path)
             except Exception as e:
@@ -89,7 +89,7 @@ class AutoNestGUI:
                 return
         else:
             # Lokale Analyse
-            from project_scanner import describe_project_locally
+            from core.project_scanner import describe_project_locally
 
             description = describe_project_locally(path)
 

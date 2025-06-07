@@ -2,8 +2,8 @@ import tempfile
 import os
 import sys
 
-sys.path.insert(0, os.path.abspath("core"))
-from insertion_finder import find_best_insertion_point
+sys.path.insert(0, os.getcwd())
+from core.insertion_finder import find_best_insertion_point
 
 
 def test_find_best_insertion_point():

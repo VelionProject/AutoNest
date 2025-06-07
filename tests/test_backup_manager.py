@@ -2,8 +2,8 @@ import tempfile
 import os
 import sys
 
-sys.path.insert(0, os.path.abspath("backup"))
-import backup_manager
+sys.path.insert(0, os.getcwd())
+from backup import backup_manager
 
 
 def test_backup_and_restore():
@@ -11,6 +11,7 @@ def test_backup_and_restore():
         file_path = os.path.join(tmp, "file.txt")
         with open(file_path, "w", encoding="utf-8") as f:
             f.write("data")
+        backup_manager.ROOT_BACKUP_DIR = os.path.join(tmp, "backups")
         session = backup_manager.create_backup_session()
         backup_manager.backup_file_to_session(file_path, session)
         filename = os.path.basename(file_path)

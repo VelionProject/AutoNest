@@ -2,8 +2,8 @@ import tempfile
 import os
 import sys
 
-sys.path.insert(0, os.path.abspath("core"))
-from project_scanner import scan_python_files, extract_structure
+sys.path.insert(0, os.getcwd())
+from core.project_scanner import scan_python_files, extract_structure
 
 
 def test_scan_python_files_and_structure():

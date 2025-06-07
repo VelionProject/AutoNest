@@ -1,7 +1,7 @@
 # restore_tool.py
 
 import os
-from backup_manager import list_backup_sessions, restore_file_from_session
+from backup.backup_manager import list_backup_sessions, restore_file_from_session
 from utils.logger import get_logger
 
 logger = get_logger(__name__)
