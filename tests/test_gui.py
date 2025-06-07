@@ -5,7 +5,7 @@ import os
 pytest.importorskip("tkinter")
 pytest.importorskip("openai")
 
-sys.path.insert(0, os.getcwd())
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 from interface.autonest_gui import AutoNestGUI
 import tkinter as tk
 
