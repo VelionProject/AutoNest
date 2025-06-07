@@ -13,7 +13,10 @@ AutoNest is a semantic Python code assistant that automatically finds the best p
 See full documentation inside the `/core` and `/interface` directories.
 
 ## Requirements
-See `requirements.txt`
+Install the Python packages listed in `requirements.txt` before running AutoNest. Use:
+```
+pip install -r requirements.txt
+```
 
 ## Usage
 Run the GUI:
