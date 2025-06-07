@@ -4,11 +4,15 @@ from code_inserter import insert_code_into_file
 from insertion_finder import find_best_insertion_point
 from pprint import pprint
 import os
+from utils.logger import get_logger
+
+logger = get_logger(__name__)
+
 
 def decide_mode_and_confirm(code_str, project_path):
     matches = find_best_insertion_point(code_str, project_path)
     if not matches:
-        print("Kein passender Ort im Projekt gefunden.")
+        logger.warning("Kein passender Ort im Projekt gefunden.")
         return
 
     best = matches[0]
@@ -19,19 +23,20 @@ def decide_mode_and_confirm(code_str, project_path):
     # Entscheidung: Erweiterung oder neue Funktion?
     modus = "erweitern" if score > 0.75 else "neu"
 
-    print("\n=== Vorschlag von AutoNest ===")
-    print(f"Modus       : {modus.upper()}")
-    print(f"Zieldatei   : {file}")
-    print(f"Zielobjekt  : {func}")
-    print(f"Ähnlichkeit : {int(score * 100)} %")
+    logger.info("\n=== Vorschlag von AutoNest ===")
+    logger.info("Modus       : %s", modus.upper())
+    logger.info("Zieldatei   : %s", file)
+    logger.info("Zielobjekt  : %s", func)
+    logger.info("Ähnlichkeit : %s %%", int(score * 100))
 
     confirm = input("\nWillst du das so ausführen? [J/N]: ").strip().lower()
     if confirm == "j":
         result = insert_code_into_file(code_str, project_path, modus=modus)
-        print("\n--- Ergebnis ---")
-        pprint(result)
+        logger.info("\n--- Ergebnis ---")
+        logger.info(result)
     else:
-        print("Abgebrochen.")
+        logger.info("Abgebrochen.")
+
 
 # Beispielnutzung:
 if __name__ == "__main__":

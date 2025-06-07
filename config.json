@@ -1,0 +1,5 @@
+{
+  "backup_dir": ".autonest_backups",
+  "use_gpt": false,
+  "default_project_path": ""
+}

@@ -24,3 +24,15 @@ python interface/autonest_gui.py
 This is my very first Python project. I built AutoNest to learn,
 Feedback, ideas, and improvements are welcome!
 
+## Configuration
+Edit `config.json` to configure backup location, GPT usage and a default project path.
+
+## Running Tests
+Install dev dependencies and run:
+```
+pytest -v
+```
+
+## Continuous Integration
+This project uses GitHub Actions to run `black`, `flake8` and the test suite on each push.
+
