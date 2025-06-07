@@ -8,6 +8,7 @@ AutoNest is a semantic Python code assistant that automatically finds the best p
 - GUI with semantic color feedback
 - GPT-compatible modular structure
 - Restore tool with file recovery
+- Plugin system for custom rules
 
 See full documentation inside the `/core` and `/interface` directories.
 
