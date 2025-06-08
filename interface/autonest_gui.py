@@ -4,6 +4,7 @@ import os
 from core.code_inserter import safe_insert_code
 from core.autonest_semantics import suggest
 from backup.backup_manager import list_backup_sessions, restore_file_from_session
+from backup.memory_context_manager import save_context_entry, load_recent_entries
 from utils.logger import get_logger
 from utils.i18n import t
 from utils.config import load_config, save_config
@@ -53,6 +54,11 @@ class AutoNestGUI:
             self.root,
             text=t("Projekt beschreiben"),
             command=self.analyse_project_description,
+        ).pack(anchor="w", padx=15, pady=(0, 5))
+        tk.Button(
+            self.root,
+            text=t("Zuletzt eingefügt"),
+            command=self.open_recent_entries,
         ).pack(anchor="w", padx=15, pady=(0, 5))
 
         frame_code = tk.LabelFrame(self.root, text=t("Neuen Python-Code einfügen"), padx=10, pady=5)
@@ -166,6 +172,7 @@ class AutoNestGUI:
         if "error" in result:
             messagebox.showerror(t("Fehler"), result["error"])
         else:
+            save_context_entry(path, self.suggestion, code)
             messagebox.showinfo(
                 t("Erfolg"),
                 f"Code erfolgreich eingefügt!\n\nDatei: {result['datei']}\nModus: {modus}\nBackup: {result['backup_session']}",
@@ -214,6 +221,29 @@ class AutoNestGUI:
             messagebox.showinfo(t("Wiederhergestellt"), result)
 
         tk.Button(restore_win, text=t("Wiederherstellen"), command=restore_action).pack(pady=15)
+
+    def open_recent_entries(self):
+        path = self.project_path.get().strip()
+        if not path:
+            messagebox.showwarning(t("Pfad fehlt"), t("Bitte zuerst ein Projektverzeichnis wählen."))
+            return
+
+        entries = load_recent_entries(path)
+        win = tk.Toplevel(self.root)
+        win.title(t("Zuletzt eingefügt"))
+        win.geometry("600x300")
+
+        if not entries:
+            tk.Label(win, text=t("Keine Einträge gefunden."), fg="red").pack(pady=10)
+            return
+
+        txt = tk.Text(win, wrap="word")
+        txt.pack(fill="both", expand=True)
+        for entry in entries:
+            header = f"{entry['timestamp']} - {entry['file_target']}::{entry['function_target']} [{entry['mode']}]"
+            txt.insert("end", header + "\n")
+            txt.insert("end", entry["raw_code"] + "\n\n")
+        txt.config(state="disabled")
 
     def open_module_manager(self):
         win = tk.Toplevel(self.root)
