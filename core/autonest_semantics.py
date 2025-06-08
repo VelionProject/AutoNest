@@ -13,15 +13,15 @@ else:
     USE_GPT = cfg.get("use_gpt", False)
 
 if USE_GPT:
-    from core.autonest_gpt import suggest_with_gpt as suggest_logic
-    from core.project_scanner import scan_project_structure
+    from core.autonest_suggestor import suggest_insertion as suggest_logic
+    from core.autonest_gpt import describe_project_with_gpt
 else:
     from core.autonest_suggestor import suggest_insertion as suggest_logic
 
 
 def suggest(code_str, project_path):
     if USE_GPT:
-        structure = scan_project_structure(project_path)
-        return suggest_logic(code_str, structure)
+        project_summary = describe_project_with_gpt(project_path)
+        return suggest_logic(code_str, project_summary=project_summary)
     else:
-        return suggest_logic(code_str, project_path)
+        return suggest_logic(code_str, project_path=project_path)
