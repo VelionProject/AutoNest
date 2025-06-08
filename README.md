@@ -9,6 +9,7 @@ AutoNest is a semantic Python code assistant that automatically finds the best p
 - GPT-compatible modular structure
 - Restore tool with file recovery
 - Plugin system for custom rules
+- URL fetching utility via `utils.network_scanner`
 
 See full documentation inside the `/core` and `/interface` directories.
 
