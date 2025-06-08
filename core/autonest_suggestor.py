@@ -5,12 +5,12 @@ from core.autonest_gpt import build_prompt, describe_project_with_gpt
 openai_api_key = os.getenv("OPENAI_API_KEY")
 
 
-def suggest_insertion(code_str, project_path):
-    """
-    Führt eine semantische Analyse durch und gibt GPT-Vorschlag zurück.
-    """
-    # Projektbeschreibung erzeugen (strukturbasiert)
-    project_summary = describe_project_with_gpt(project_path)
+def suggest_insertion(code_str, project_summary=None, project_path=None):
+    """Return GPT suggestion for inserting ``code_str`` into a project."""
+    if project_summary is None:
+        if project_path is None:
+            raise ValueError("project_path or project_summary required")
+        project_summary = describe_project_with_gpt(project_path)
 
     # Prompt generieren
     prompt = build_prompt(code_str, project_summary)
