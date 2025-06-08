@@ -1,9 +1,10 @@
 import tempfile
 import os
 import sys
+import pytest
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
-from core.insertion_finder import find_best_insertion_point
+from core.insertion_finder import find_best_insertion_point, NoFunctionFoundError
 
 
 def test_find_best_insertion_point():
@@ -16,3 +17,10 @@ def test_find_best_insertion_point():
         matches = find_best_insertion_point(code, tmp)
         assert matches
         assert matches[0]["file"] == file1
+
+
+def test_no_function_found_error():
+    with tempfile.TemporaryDirectory() as tmp:
+        code = "print('no func')"
+        with pytest.raises(NoFunctionFoundError):
+            find_best_insertion_point(code, tmp)

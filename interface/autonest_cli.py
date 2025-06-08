@@ -1,7 +1,10 @@
 # autonest_cli.py
 
 from core.code_inserter import insert_code_into_file
-from core.insertion_finder import find_best_insertion_point
+from core.insertion_finder import (
+    find_best_insertion_point,
+    NoFunctionFoundError,
+)
 from pprint import pprint
 import os
 from utils.logger import get_logger
@@ -10,7 +13,11 @@ logger = get_logger(__name__)
 
 
 def decide_mode_and_confirm(code_str, project_path):
-    matches = find_best_insertion_point(code_str, project_path)
+    try:
+        matches = find_best_insertion_point(code_str, project_path)
+    except NoFunctionFoundError as exc:
+        logger.warning(str(exc))
+        return
     if not matches:
         logger.warning("Kein passender Ort im Projekt gefunden.")
         return

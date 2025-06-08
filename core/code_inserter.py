@@ -4,7 +4,10 @@ import ast
 import os
 import tempfile
 
-from core.insertion_finder import find_best_insertion_point
+from core.insertion_finder import (
+    find_best_insertion_point,
+    NoFunctionFoundError,
+)
 from backup.backup_manager import create_backup_session, backup_file_to_session
 
 
@@ -12,7 +15,10 @@ def insert_code_into_file(code_str, project_path, modus="neu"):
     """
     Führt die eigentliche Code-Einfügung durch (ohne Backup).
     """
-    match_list = find_best_insertion_point(code_str, project_path)
+    try:
+        match_list = find_best_insertion_point(code_str, project_path)
+    except NoFunctionFoundError as exc:
+        return {"error": str(exc)}
     if not match_list:
         return {"error": "Kein geeigneter Einfügepunkt gefunden"}
 
@@ -96,7 +102,10 @@ def safe_insert_code(code_str, project_path, modus="neu"):
     """
     Kombiniert Backup + Code-Einfügung automatisch.
     """
-    match_list = find_best_insertion_point(code_str, project_path)
+    try:
+        match_list = find_best_insertion_point(code_str, project_path)
+    except NoFunctionFoundError as exc:
+        return {"error": str(exc)}
     if not match_list:
         return {"error": "Kein Einfügepunkt gefunden"}
 
