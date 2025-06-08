@@ -3,6 +3,7 @@
 import ast
 import os
 import tempfile
+import textwrap
 
 from core.insertion_finder import (
     find_best_insertion_point,
@@ -12,13 +13,18 @@ from backup.backup_manager import create_backup_session, backup_file_to_session
 
 
 def insert_code_into_file(code_str, project_path, modus="neu"):
+    """Insert code into a project file determined by ``find_best_insertion_point``.
+
+    The function now uses :mod:`ast` to reliably locate the target function and
+    compute the correct insertion position. This preserves indentation and also
+    works with decorated or nested functions.
     """
-    Führt die eigentliche Code-Einfügung durch (ohne Backup).
-    """
+
     try:
         match_list = find_best_insertion_point(code_str, project_path)
     except NoFunctionFoundError as exc:
         return {"error": str(exc)}
+
     if not match_list:
         return {"error": "Kein geeigneter Einfügepunkt gefunden"}
 
@@ -26,76 +32,61 @@ def insert_code_into_file(code_str, project_path, modus="neu"):
     target_file = best["file"]
     insert_target = best["match_in_project"]
 
-    with open(target_file, "r", encoding="utf-8") as f:
-        lines = f.readlines()
+    try:
+        with open(target_file, "r", encoding="utf-8") as fh:
+            source = fh.read()
+        tree = ast.parse(source)
+    except SyntaxError as exc:
+        return {"error": f"Fehler beim Parsen der Zieldatei: {exc}"}
 
-    new_code_lines = code_str.strip().splitlines(keepends=True)
+    lines = source.splitlines(keepends=True)
+    snippet = textwrap.dedent(code_str).splitlines(keepends=True)
+    if snippet and not snippet[-1].endswith("\n"):
+        snippet[-1] += "\n"
+
+    func_node = None
+    for node in ast.walk(tree):
+        if isinstance(node, ast.FunctionDef) and node.name == insert_target:
+            func_node = node
+            break
+
+    if func_node is None or func_node.end_lineno is None:
+        return {"error": "Einfügestelle konnte nicht lokalisiert werden"}
 
     if modus == "erweitern":
-        inside_target = False
-        indent_level = None
-        insert_index = None
-
-        for i, line in enumerate(lines):
-            if f"def {insert_target}" in line:
-                inside_target = True
-                indent_level = len(line) - len(line.lstrip())
-                continue
-            if inside_target:
-                if len(line.strip()) == 0:
-                    continue
-                curr_indent = len(line) - len(line.lstrip())
-                if curr_indent <= indent_level:
-                    insert_index = i
-                    break
-
-        if insert_index is None:
-            insert_index = len(lines)
-
-        body_indent = " " * (indent_level + 4)
-        extended_body = [body_indent + l.lstrip() for l in new_code_lines]
-
-        updated = lines[:insert_index] + extended_body + ["\n"] + lines[insert_index:]
-
+        indent = " " * (func_node.col_offset + 4)
+        insert_at = func_node.end_lineno
+        extended = [indent + l.lstrip() if l.strip() else l for l in snippet]
+        lines[insert_at:insert_at] = extended
     else:
-        insert_index = None
-        for idx, line in enumerate(lines):
-            if f"def {insert_target}" in line:
-                insert_index = idx
-                break
+        indent = " " * func_node.col_offset
+        insert_at = func_node.end_lineno
+        new_block = [indent + line if line.strip() else line for line in snippet]
+        lines[insert_at:insert_at] = ["\n"] + new_block + ["\n"]
 
-        if insert_index is None:
-            return {"error": "Einfügestelle konnte nicht lokalisiert werden"}
-
-        end_index = insert_index
-        indent_level = len(lines[insert_index]) - len(lines[insert_index].lstrip())
-
-        for i in range(insert_index + 1, len(lines)):
-            if len(lines[i].strip()) == 0:
-                continue
-            curr_indent = len(lines[i]) - len(lines[i].lstrip())
-            if curr_indent <= indent_level:
-                end_index = i
-                break
-
-        updated = lines[:end_index] + ["\n"] + new_code_lines + ["\n"] + lines[end_index:]
+    updated_source = "".join(lines)
 
     temp = tempfile.NamedTemporaryFile(delete=False, suffix=".py", mode="w", encoding="utf-8")
-    temp.writelines(updated)
+    temp.write(updated_source)
     temp.close()
 
     try:
-        with open(temp.name, "r", encoding="utf-8") as f:
-            ast.parse(f.read())
-    except SyntaxError as e:
+        with open(temp.name, "r", encoding="utf-8") as fh:
+            ast.parse(fh.read())
+    except SyntaxError as exc:
         os.unlink(temp.name)
-        return {"error": f"Fehler beim Kompilieren: {e}"}
+        return {"error": f"Fehler beim Kompilieren: {exc}"}
 
-    with open(target_file, "w", encoding="utf-8") as f:
-        f.writelines(updated)
+    with open(target_file, "w", encoding="utf-8") as fh:
+        fh.write(updated_source)
 
     os.unlink(temp.name)
-    return {"status": "Code eingefügt", "datei": target_file, "modus": modus, "ziel": insert_target}
+    return {
+        "status": "Code eingefügt",
+        "datei": target_file,
+        "modus": modus,
+        "ziel": insert_target,
+    }
 
 
 def safe_insert_code(code_str, project_path, modus="neu"):
