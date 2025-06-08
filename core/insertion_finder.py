@@ -6,6 +6,11 @@ from core.project_scanner import scan_project_structure
 from utils.logger import get_logger
 from plugins import load_plugins
 
+
+class NoFunctionFoundError(Exception):
+    """Raised when no valid function definitions are present in the code."""
+
+
 logger = get_logger(__name__)
 
 
@@ -35,7 +40,7 @@ def find_best_insertion_point(code_str, project_path):
     target_names = extract_function_names(code_str)
     if not target_names:
         logger.warning("Keine gültige Funktion im Code gefunden")
-        return {"error": "Keine gültige Funktion erkannt"}
+        raise NoFunctionFoundError("Keine gültige Funktion erkannt")
 
     structure = scan_project_structure(project_path)
     matches = []
