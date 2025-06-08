@@ -34,6 +34,8 @@ _TRANSLATIONS = {
         "Module verwalten": "Manage modules",
         "Speichern": "Save",
         "Modulstatus gespeichert.": "Module status saved.",
+        "Zuletzt eingefügt": "Recently inserted",
+        "Keine Einträge gefunden.": "No entries found.",
     },
     "de": {
         "Pfad fehlt": "Pfad fehlt",
@@ -66,6 +68,8 @@ _TRANSLATIONS = {
         "Module verwalten": "Module verwalten",
         "Speichern": "Speichern",
         "Modulstatus gespeichert.": "Modulstatus gespeichert.",
+        "Zuletzt eingefügt": "Zuletzt eingefügt",
+        "Keine Einträge gefunden.": "Keine Einträge gefunden.",
     },
     "fr": {
         "Pfad fehlt": "Chemin manquant",
@@ -98,6 +102,8 @@ _TRANSLATIONS = {
         "Module verwalten": "G\u00e9rer les modules",
         "Speichern": "Enregistrer",
         "Modulstatus gespeichert.": "Statut du module enregistr\u00e9.",
+        "Zuletzt eingefügt": "R\u00e9cemment ins\u00e9r\u00e9",
+        "Keine Einträge gefunden.": "Aucune entr\u00e9e trouv\u00e9e.",
     },
 }
 
