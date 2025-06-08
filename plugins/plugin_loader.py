@@ -2,6 +2,9 @@ import importlib
 import pkgutil
 import os
 from utils.config import load_config, save_config
+from utils.logger import get_logger
+
+logger = get_logger(__name__)
 
 
 def list_plugins():
@@ -28,7 +31,11 @@ def load_plugins():
             continue
         if name in active and not active[name]:
             continue
-        module = importlib.import_module(f"{__package__}.{name}")
+        try:
+            module = importlib.import_module(f"{__package__}.{name}")
+        except ImportError as exc:
+            logger.warning("Plugin '%s' konnte nicht geladen werden: %s", name, str(exc))
+            continue
         if hasattr(module, "get_rules"):
             plugins.extend(module.get_rules())
     return plugins

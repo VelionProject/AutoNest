@@ -19,3 +19,23 @@ def test_plugin_can_be_disabled(tmp_path, monkeypatch):
     monkeypatch.chdir(tmp_path)
     rules = load_plugins()
     assert not rules
+
+
+def test_faulty_plugin_is_skipped(monkeypatch):
+    plugin_dir = os.path.join(os.path.dirname(__file__), "..", "plugins")
+    faulty_path = os.path.join(plugin_dir, "faulty_plugin.py")
+    with open(faulty_path, "w", encoding="utf-8") as fh:
+        fh.write('raise ImportError("boom")')
+
+    warnings = []
+    from plugins import plugin_loader
+
+    monkeypatch.setattr(
+        plugin_loader.logger, "warning", lambda *args, **kwargs: warnings.append(args)
+    )
+    try:
+        rules = plugin_loader.load_plugins()
+        assert any(callable(r) for r in rules)
+        assert warnings
+    finally:
+        os.remove(faulty_path)
