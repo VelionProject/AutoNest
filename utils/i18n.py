@@ -59,9 +59,13 @@ _TRANSLATIONS = {
         "Datei innerhalb der Session:": "Datei innerhalb der Session:",
         "Fehlende Auswahl": "Fehlende Auswahl",
         "Wiederherstellen": "Wiederherstellen",
-        "Bitte zuerst ein Projektverzeichnis wählen.": "Bitte zuerst ein Projektverzeichnis wählen.",
+        "Bitte zuerst ein Projektverzeichnis wählen.": (
+            "Bitte zuerst ein Projektverzeichnis wählen."
+        ),
         "Fehler bei GPT": "Fehler bei GPT",
-        "Bitte zuerst auf 'Analyse starten' klicken.": "Bitte zuerst auf 'Analyse starten' klicken.",
+        "Bitte zuerst auf 'Analyse starten' klicken.": (
+            "Bitte zuerst auf 'Analyse starten' klicken."
+        ),
         "Bitte Code und Projektpfad angeben.": "Bitte Code und Projektpfad angeben.",
         "Bitte Session und Datei wählen.": "Bitte Session und Datei wählen.",
         "Wiederhergestellt": "Wiederhergestellt",
@@ -93,9 +97,13 @@ _TRANSLATIONS = {
         "Datei innerhalb der Session:": "Fichier dans la session :",
         "Fehlende Auswahl": "S\u00e9lection manquante",
         "Wiederherstellen": "Restaurer",
-        "Bitte zuerst ein Projektverzeichnis wählen.": "Veuillez d'abord choisir un r\u00e9pertoire de projet.",
+        "Bitte zuerst ein Projektverzeichnis wählen.": (
+            "Veuillez d'abord choisir un r\u00e9pertoire de projet."
+        ),
         "Fehler bei GPT": "Erreur GPT",
-        "Bitte zuerst auf 'Analyse starten' klicken.": "Veuillez d'abord cliquer sur 'D\u00e9marrer l'analyse'.",
+        "Bitte zuerst auf 'Analyse starten' klicken.": (
+            "Veuillez d'abord cliquer sur 'D\u00e9marrer l'analyse'."
+        ),
         "Bitte Code und Projektpfad angeben.": "Veuillez fournir le code et le chemin du projet.",
         "Bitte Session und Datei wählen.": "Veuillez choisir la session et le fichier.",
         "Wiederhergestellt": "Restaur\u00e9",
