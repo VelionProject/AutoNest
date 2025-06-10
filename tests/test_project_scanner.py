@@ -27,7 +27,12 @@ def test_describe_project_locally_imports():
         file1 = os.path.join(tmp, "mod.py")
         with open(file1, "w", encoding="utf-8") as f:
             f.write(
-                """import os\nfrom pkg import mod as m\n\nclass B:\n    pass\n\ndef func():\n    pass\n"""
+                (
+                    "import os\n"
+                    "from pkg import mod as m\n\n"
+                    "class B:\n    pass\n\n"
+                    "def func():\n    pass\n"
+                )
             )
 
         result = describe_project_locally(tmp)

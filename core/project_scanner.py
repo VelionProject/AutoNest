@@ -93,7 +93,10 @@ def describe_project_locally(project_path):
                             else:
                                 modules.add(alias.name)
 
-    return f"Funktionen: {function_count}\nKlassen: {class_count}\nVerwendete Module: {', '.join(sorted(modules))}"
+    return (
+        f"Funktionen: {function_count}\nKlassen: {class_count}\nVerwendete "
+        f"Module: {', '.join(sorted(modules))}"
+    )
 
 
 # Beispielnutzung (zum Testen):

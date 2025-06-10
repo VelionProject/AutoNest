@@ -148,9 +148,16 @@ class AutoNestGUI:
             color = "red"
             symbol = "❌"
 
-        status_text = f"{symbol}  Modus: {modus.upper()}  |  Datei: {datei}  |  Funktion: {funktion}  |  Sicherheit: {sicherheit.upper()}"
+        status_text = (
+            f"{symbol}  Modus: {modus.upper()}  |  Datei: {datei}  |  Funktion: {funktion}  |  "
+            f"Sicherheit: {sicherheit.upper()}"
+        )
 
-        self.result_label.config(text=status_text, fg=color, font=("Arial", 10, "bold"))
+        self.result_label.config(
+            text=status_text,
+            fg=color,
+            font=("Arial", 10, "bold"),
+        )
 
     def insert_code(self):
         if not self.suggestion:
@@ -175,7 +182,11 @@ class AutoNestGUI:
             save_context_entry(path, self.suggestion, code)
             messagebox.showinfo(
                 t("Erfolg"),
-                f"Code erfolgreich eingefügt!\n\nDatei: {result['datei']}\nModus: {modus}\nBackup: {result['backup_session']}",
+                (
+                    "Code erfolgreich eingefügt!\n\n"
+                    f"Datei: {result['datei']}\nModus: {modus}\n"
+                    f"Backup: {result['backup_session']}"
+                ),
             )
 
     def open_restore_window(self):
@@ -225,7 +236,9 @@ class AutoNestGUI:
     def open_recent_entries(self):
         path = self.project_path.get().strip()
         if not path:
-            messagebox.showwarning(t("Pfad fehlt"), t("Bitte zuerst ein Projektverzeichnis wählen."))
+            messagebox.showwarning(
+                t("Pfad fehlt"), t("Bitte zuerst ein Projektverzeichnis wählen.")
+            )
             return
 
         entries = load_recent_entries(path)
@@ -240,7 +253,10 @@ class AutoNestGUI:
         txt = tk.Text(win, wrap="word")
         txt.pack(fill="both", expand=True)
         for entry in entries:
-            header = f"{entry['timestamp']} - {entry['file_target']}::{entry['function_target']} [{entry['mode']}]"
+            header = (
+                f"{entry['timestamp']} - {entry['file_target']}::"
+                f"{entry['function_target']} [{entry['mode']}]"
+            )
             txt.insert("end", header + "\n")
             txt.insert("end", entry["raw_code"] + "\n\n")
         txt.config(state="disabled")
