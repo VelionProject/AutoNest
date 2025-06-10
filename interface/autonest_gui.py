@@ -1,6 +1,8 @@
 import tkinter as tk
 from tkinter import filedialog, messagebox
 import os
+import logging
+
 from core.code_inserter import safe_insert_code
 from core.autonest_semantics import suggest
 from backup.backup_manager import list_backup_sessions, restore_file_from_session
@@ -13,77 +15,83 @@ from plugins import list_plugins
 logger = get_logger(__name__)
 
 
+class TextHandler(logging.Handler):
+    """Logging handler that writes log messages into a Tkinter Text widget."""
+
+    def __init__(self, text_widget: tk.Text):
+        super().__init__()
+        self.text_widget = text_widget
+
+    def emit(self, record: logging.LogRecord) -> None:
+        msg = self.format(record)
+        self.text_widget.configure(state="normal")
+        self.text_widget.insert("end", msg + "\n")
+        self.text_widget.see("end")
+        self.text_widget.configure(state="disabled")
+
+
 class AutoNestGUI:
-    def __init__(self, root):
+    """Main application window for interacting with AutoNest."""
+
+    def __init__(self, root: tk.Tk):
         self.root = root
-        self.root.title("AutoNest 0.2")
-        self.root.geometry("820x700")
+        self.root.title("AutoNest v0.1 – Python Coding Assistant")
+        self.root.geometry("900x700")
 
         self.config = load_config()
 
         self.project_path = tk.StringVar(value=self.config.get("default_project_path", ""))
-        self.use_gpt = tk.BooleanVar(value=self.config.get("use_gpt", False))
+        self.model_var = tk.StringVar(value=self.config.get("model", "GPT-4o"))
+
         self.suggestion = None
 
         self.build_gui()
 
-    def build_gui(self):
-        frame_top = tk.LabelFrame(self.root, text=t("Projektverzeichnis"), padx=10, pady=5)
-        frame_top.pack(fill="x", padx=10, pady=5)
+    def build_gui(self) -> None:
+        """Construct all UI components."""
 
-        path_entry = tk.Entry(frame_top, textvariable=self.project_path, width=70)
-        path_entry.pack(side=tk.LEFT, padx=(0, 5))
-        tk.Button(frame_top, text=t("Durchsuchen"), command=self.browse_folder).pack(side=tk.LEFT)
+        container = tk.Frame(self.root)
+        container.pack(fill="both", expand=True)
 
-        gpt_toggle = tk.Checkbutton(
-            self.root, text=t("GPT-Modus aktivieren"), variable=self.use_gpt
-        )
-        gpt_toggle.pack(anchor="w", padx=15, pady=(0, 5))
+        # Sidebar with navigation buttons
+        sidebar = tk.Frame(container, width=150, bg="#f5f5f5")
+        sidebar.pack(side=tk.LEFT, fill=tk.Y)
+
+        self.main_area = tk.Frame(container)
+        self.main_area.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+
+        self.frames = {}
+        self.frames["modules"] = self._build_module_frame()
+        self.frames["project"] = self._build_project_frame()
+        self.frames["code"] = self._build_code_frame()
+        self.frames["logs"] = self._build_logs_frame()
+
+        for name, frame in self.frames.items():
+            frame.pack_forget()
 
         tk.Button(
-            self.root,
-            text=t("Backup wiederherstellen"),
-            command=self.open_restore_window,
-        ).pack(anchor="w", padx=15, pady=(0, 10))
+            sidebar, text=t("Module Status"), command=lambda: self.show_frame("modules")
+        ).pack(fill="x")
         tk.Button(
-            self.root,
-            text=t("Module verwalten"),
-            command=self.open_module_manager,
-        ).pack(anchor="w", padx=15, pady=(0, 5))
-        tk.Button(
-            self.root,
-            text=t("Projekt beschreiben"),
-            command=self.analyse_project_description,
-        ).pack(anchor="w", padx=15, pady=(0, 5))
-        tk.Button(
-            self.root,
-            text=t("Zuletzt eingefügt"),
-            command=self.open_recent_entries,
-        ).pack(anchor="w", padx=15, pady=(0, 5))
-
-        frame_code = tk.LabelFrame(self.root, text=t("Neuen Python-Code einfügen"), padx=10, pady=5)
-        frame_code.pack(fill="both", expand=True, padx=10, pady=5)
-
-        self.code_text = tk.Text(frame_code, height=15)
-        self.code_text.pack(fill="both", expand=True)
-
-        button_frame = tk.Frame(self.root)
-        button_frame.pack(pady=10)
-
-        tk.Button(button_frame, text=t("Analyse starten"), command=self.analyse_code).pack(
-            side=tk.LEFT, padx=10
+            sidebar, text=t("Manage Projects"), command=lambda: self.show_frame("project")
+        ).pack(fill="x")
+        tk.Button(sidebar, text=t("Insert Code"), command=lambda: self.show_frame("code")).pack(
+            fill="x"
         )
-        tk.Button(button_frame, text=t("Code einfügen + sichern"), command=self.insert_code).pack(
-            side=tk.LEFT
-        )
+        tk.Button(sidebar, text=t("Logs"), command=lambda: self.show_frame("logs")).pack(fill="x")
 
-        self.result_label = tk.Label(
-            self.root,
-            text=t("Noch keine Analyse durchgeführt."),
-            fg="gray",
-            font=("Arial", 10, "italic"),
-        )
-        self.result_label.pack(pady=(10, 0))
+        self.footer_var = tk.StringVar()
+        footer = tk.Label(self.root, textvariable=self.footer_var, anchor="w")
+        footer.pack(fill="x", side=tk.BOTTOM)
+        self.project_path.trace("w", lambda *_: self._update_footer())
+        self._update_footer()
+
+        self.show_frame("code")
+
+        # attach logger after log frame exists
+        handler = TextHandler(self.log_text)
+        handler.setFormatter(logging.Formatter("%(asctime)s [%(levelname)s] %(message)s"))
+        logging.getLogger().addHandler(handler)
 
     def analyse_project_description(self):
         path = self.project_path.get().strip()
@@ -93,8 +101,7 @@ class AutoNestGUI:
             )
             return
 
-        if self.use_gpt.get():
-            # GPT-Modus verwenden
+        if self.model_var.get() == "GPT-4o":
             try:
                 from core.autonest_gpt import describe_project_with_gpt
 
@@ -116,7 +123,7 @@ class AutoNestGUI:
         if folder:
             self.project_path.set(folder)
 
-    def analyse_code(self):
+    def analyse_code(self) -> None:
         code = self.code_text.get("1.0", tk.END).strip()
         path = self.project_path.get().strip()
 
@@ -124,12 +131,15 @@ class AutoNestGUI:
             messagebox.showerror(t("Fehlende Eingaben"), t("Bitte Code und Projektpfad angeben."))
             return
 
-        os.environ["AUTONEST_USE_GPT"] = "1" if self.use_gpt.get() else "0"
+        os.environ["AUTONEST_MODEL"] = self.model_var.get()
 
         try:
             self.suggestion = suggest(code, path)
         except Exception as e:
-            self.result_label.config(text=f"Analysefehler: {str(e)}", fg="red")
+            self.results_panel.configure(state="normal")
+            self.results_panel.delete("1.0", tk.END)
+            self.results_panel.insert("end", f"Analysefehler: {str(e)}")
+            self.results_panel.configure(state="disabled")
             return
 
         modus = self.suggestion.get("vermuteter_modus", "").lower()
@@ -153,11 +163,10 @@ class AutoNestGUI:
             f"Sicherheit: {sicherheit.upper()}"
         )
 
-        self.result_label.config(
-            text=status_text,
-            fg=color,
-            font=("Arial", 10, "bold"),
-        )
+        self.results_panel.configure(state="normal")
+        self.results_panel.delete("1.0", tk.END)
+        self.results_panel.insert("end", status_text)
+        self.results_panel.configure(state="disabled")
 
     def insert_code(self):
         if not self.suggestion:
@@ -282,6 +291,106 @@ class AutoNestGUI:
             win.destroy()
 
         tk.Button(win, text=t("Speichern"), command=save).pack(pady=10)
+
+    # --- UI construction helpers ---
+    def _build_project_frame(self) -> tk.Frame:
+        frame = tk.Frame(self.main_area)
+
+        top = tk.LabelFrame(frame, text=t("Projektverzeichnis"), padx=10, pady=5)
+        top.pack(fill="x", padx=10, pady=5)
+
+        tk.Entry(top, textvariable=self.project_path, width=70).pack(side=tk.LEFT, padx=(0, 5))
+        tk.Button(top, text=t("Durchsuchen"), command=self.browse_folder).pack(side=tk.LEFT)
+
+        settings = tk.LabelFrame(frame, text=t("Einstellungen"), padx=10, pady=5)
+        settings.pack(fill="x", padx=10, pady=5)
+
+        tk.Label(settings, text=t("AI Modell:"), anchor="w").pack(side=tk.LEFT)
+        tk.OptionMenu(settings, self.model_var, "GPT-4o", "Codex").pack(side=tk.LEFT)
+        tk.Button(settings, text=t("Aktualisieren"), command=self.save_settings).pack(
+            side=tk.LEFT, padx=5
+        )
+
+        tk.Button(
+            frame, text=t("Projekt beschreiben"), command=self.analyse_project_description
+        ).pack(anchor="w", padx=15, pady=(10, 5))
+        tk.Button(frame, text=t("Zuletzt eingefügt"), command=self.open_recent_entries).pack(
+            anchor="w", padx=15, pady=(0, 5)
+        )
+        tk.Button(frame, text=t("Backup wiederherstellen"), command=self.open_restore_window).pack(
+            anchor="w", padx=15, pady=(0, 5)
+        )
+
+        return frame
+
+    def _build_module_frame(self) -> tk.Frame:
+        frame = tk.Frame(self.main_area)
+
+        vars_ = {}
+        modules = self.config.get("modules", {})
+        for name in list_plugins():
+            var = tk.BooleanVar(value=modules.get(name, True))
+            vars_[name] = var
+            tk.Checkbutton(frame, text=name, variable=var).pack(anchor="w")
+
+        tk.Button(frame, text=t("Speichern"), command=lambda: self._save_modules(vars_)).pack(
+            pady=10
+        )
+
+        return frame
+
+    def _save_modules(self, vars_: dict) -> None:
+        modules = self.config.get("modules", {})
+        for name, var in vars_.items():
+            modules[name] = var.get()
+        self.config["modules"] = modules
+        save_config(self.config)
+        messagebox.showinfo(t("Erfolg"), t("Modulstatus gespeichert."))
+
+    def _build_code_frame(self) -> tk.Frame:
+        frame = tk.Frame(self.main_area)
+
+        code_area = tk.LabelFrame(frame, text=t("Neuen Python-Code einfügen"), padx=10, pady=5)
+        code_area.pack(fill="both", expand=True, padx=10, pady=5)
+
+        self.code_text = tk.Text(code_area, height=15)
+        self.code_text.pack(fill="both", expand=True)
+
+        button_frame = tk.Frame(frame)
+        button_frame.pack(pady=10)
+
+        tk.Button(button_frame, text=t("Execute Code"), command=self.analyse_code).pack(
+            side=tk.LEFT, padx=10
+        )
+        tk.Button(button_frame, text=t("Insert"), command=self.insert_code).pack(side=tk.LEFT)
+        tk.Button(
+            button_frame, text=t("View Results"), command=lambda: self.show_frame("logs")
+        ).pack(side=tk.LEFT, padx=10)
+
+        self.results_panel = tk.Text(frame, height=4, state="disabled")
+        self.results_panel.pack(fill="x", padx=10, pady=(5, 0))
+
+        return frame
+
+    def _build_logs_frame(self) -> tk.Frame:
+        frame = tk.Frame(self.main_area)
+        self.log_text = tk.Text(frame, state="disabled")
+        self.log_text.pack(fill="both", expand=True)
+        return frame
+
+    def show_frame(self, name: str) -> None:
+        for f in self.frames.values():
+            f.pack_forget()
+        self.frames[name].pack(fill="both", expand=True)
+
+    def _update_footer(self) -> None:
+        self.footer_var.set(f"Projekt: {self.project_path.get()} | AutoNest v0.1")
+
+    def save_settings(self) -> None:
+        self.config["default_project_path"] = self.project_path.get()
+        self.config["model"] = self.model_var.get()
+        save_config(self.config)
+        self._update_footer()
 
 
 def main():
