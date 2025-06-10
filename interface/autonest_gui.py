@@ -35,7 +35,7 @@ class AutoNestGUI:
 
     def __init__(self, root: tk.Tk):
         self.root = root
-        self.root.title("AutoNest v0.1 – Python Coding Assistant")
+        self.root.title("AutoNest v0.3 – Python Coding Assistant")
         self.root.geometry("900x700")
 
         self.config = load_config()
@@ -384,7 +384,7 @@ class AutoNestGUI:
         self.frames[name].pack(fill="both", expand=True)
 
     def _update_footer(self) -> None:
-        self.footer_var.set(f"Projekt: {self.project_path.get()} | AutoNest v0.1")
+        self.footer_var.set(f"Projekt: {self.project_path.get()} | AutoNest v0.3")
 
     def save_settings(self) -> None:
         self.config["default_project_path"] = self.project_path.get()
