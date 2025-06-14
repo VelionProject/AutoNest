@@ -6,3 +6,8 @@
 - Updated version references to v0.3 in README and GUI.
 - Documented new ``core.engine`` and ``core.agent`` modules.
 
+## [0.3.1] - 2024-??-??
+### Fixed
+- Plugin loader now skips plugins whose `get_rules()` function raises an
+  exception and logs a warning instead of failing.
+

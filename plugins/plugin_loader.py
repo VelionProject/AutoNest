@@ -37,5 +37,8 @@ def load_plugins():
             logger.warning("Plugin '%s' konnte nicht geladen werden: %s", name, str(exc))
             continue
         if hasattr(module, "get_rules"):
-            plugins.extend(module.get_rules())
+            try:
+                plugins.extend(module.get_rules())
+            except Exception as exc:  # noqa: BLE001
+                logger.warning("Plugin '%s' konnte nicht initialisiert werden: %s", name, str(exc))
     return plugins

@@ -11,6 +11,11 @@ AutoNest is a semantic Python code assistant that automatically finds the best p
 - Plugin system for custom rules
 - URL fetching utility via `utils.network_scanner`
 
+## Plugins
+Plugins live in `plugins/` and provide additional rule sets. During loading,
+AutoNest calls each plugin's `get_rules()` function. If this call raises an
+exception, the plugin is skipped and a warning is emitted.
+
 See full documentation inside the `/core` and `/interface` directories.
 
 ## Requirements
