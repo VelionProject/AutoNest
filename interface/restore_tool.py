@@ -59,5 +59,10 @@ def restore_workflow():
     logger.info(result)
 
 
-if __name__ == "__main__":
+def main() -> None:
+    """Entry point for the restore tool."""
     restore_workflow()
+
+
+if __name__ == "__main__":
+    main()

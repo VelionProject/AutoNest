@@ -22,18 +22,18 @@ pip install -r requirements.txt
 ## Usage
 Run the GUI:
 ```
-python interface/autonest_gui.py
+python -m core.main gui
 ```
 Run the CLI:
 ```
-python interface/autonest_cli.py
+python -m core.main cli
 ```
 Use the restore tool to recover backups:
 ```
-python interface/restore_tool.py
+python -m core.main restore
 ```
-After installing with `setup.py`, you can also launch the GUI using the
-`autonest-gui` command provided by the console script entry point.
+After installing with `setup.py`, you can launch AutoNest using the
+`autonest` command provided by the console script entry point.
 ### About the Author
 
 This is my very first Python project. I built AutoNest to learn,

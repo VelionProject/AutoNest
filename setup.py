@@ -5,7 +5,7 @@ setup(
     version="0.3",
     packages=find_packages(),
     install_requires=["openai", "requests"],
-    entry_points={"console_scripts": ["autonest-gui=interface.autonest_gui:main"]},
+    entry_points={"console_scripts": ["autonest=core.main:main"]},
     author="Solen",
     description="Semantic Python code inserter with GPT and GUI support",
 )

@@ -45,8 +45,8 @@ def decide_mode_and_confirm(code_str, project_path):
         logger.info("Abgebrochen.")
 
 
-# Beispielnutzung:
-if __name__ == "__main__":
+def main() -> None:
+    """Command-line interface entry point."""
     pfad = input("Pfad zum Projekt: ").strip()
     print("Bitte füge deinen Code ein (Beende mit Leerzeile):")
 
@@ -59,3 +59,7 @@ if __name__ == "__main__":
 
     code = "\n".join(lines)
     decide_mode_and_confirm(code, pfad)
+
+
+if __name__ == "__main__":
+    main()
