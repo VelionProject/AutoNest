@@ -3,6 +3,8 @@
 from .code_inserter import insert_code_into_file, safe_insert_code
 from .insertion_finder import find_best_insertion_point, NoFunctionFoundError
 from .project_scanner import scan_project_structure, describe_project_locally
+from .engine import AutoNestEngine
+from .agent import AutoNestAgent
 
 __all__ = [
     "insert_code_into_file",
@@ -12,6 +14,8 @@ __all__ = [
     "scan_project_structure",
     "describe_project_locally",
     "suggest",
+    "AutoNestEngine",
+    "AutoNestAgent",
 ]
 
 
